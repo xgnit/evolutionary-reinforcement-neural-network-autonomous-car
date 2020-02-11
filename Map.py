@@ -5,6 +5,9 @@ from Utils import *
 class Map:
     def __init__(self):
         self.size = 256*3
+        self.path_width = 75
+        self.margin = 10
+
         self.bg = ImageUtils.make_image(self.size, self.size)
         image_load = self.bg.load()
         for i in range(self.bg.size[0]):
@@ -17,6 +20,11 @@ class Map:
 
         self.bg.show()
         print(1)
+
+
+    def path_generator(self):
+
+        pass
 
 
 
