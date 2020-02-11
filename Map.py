@@ -26,7 +26,7 @@ class Map:
 
     def path_generator(self):
 
-        n= 5
+        n= 20
 
         x = np.random.randint(0, 50, n)
         y = np.random.randint(0, 50, n)
