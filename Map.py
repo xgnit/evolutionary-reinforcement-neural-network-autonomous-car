@@ -4,6 +4,9 @@ import numpy as np
 from matplotlib import pyplot as plt
 
 class Map:
+
+
+
     def __init__(self):
         self.size = 256*3
         self.path_width = 75
