@@ -6,13 +6,21 @@
 
 
 class Config:
+
     @staticmethod
     def car_width_base():
         return 15
-    @staticmethod
-    def car_length_base():
-        return 30
+    @classmethod
+    def car_length_base(cls):
+        return 2 * cls.car_width_base()
 
+    @classmethod
+    def path_width(cls):
+        return 2 * cls.car_width_base() * 10
+
+    @staticmethod
+    def map_scaler():
+        return 2
     @staticmethod
     def map_base():
         return 256

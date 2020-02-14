@@ -2,8 +2,9 @@ from PIL import Image, ImageDraw
 import math
 from Config import Config
 import numpy as np
-from copy import copy
 from copy import deepcopy as dcopy
+import pyglet
+
 
 class RectUtils:
     # useful for wall blocks, but not for the car, cause the dot product of the car's vertices might
@@ -12,10 +13,8 @@ class RectUtils:
     def sort_vertice(vertice):
         def vector(vertice1, vertice2):
             return [vertice2[0] - vertice1[0], vertice2[1] - vertice1[1]]
-
         def valid_vector(vec):
             return True if vec[0] and vec[1] else False
-
         def around_null(res):
             return True if abs(res) < 1 else False
 
@@ -52,44 +51,36 @@ class RectUtils:
         front_right = calc_car_vertice(prefix=-1)
         back_left = calc_car_vertice(prefix=-1, adjust=math.pi)
         back_right = calc_car_vertice(prefix=1, adjust=math.pi)
-        return front_left, front_right, back_left, back_right
+        return np.array([front_left, front_right, back_right, back_left])
 
     # the order might be wrong, but, it draws the correct rectangle, just be careful with the radar position
     # I am too lazy to correct the name on this function
     @staticmethod
     def get_car_vertice(pos, angle, car_size=1):
-        front_left, front_right, back_left, back_right = RectUtils.get_car_vertice_no_rotate(pos, car_size)
-        x, y = pos
+        # front_left, front_right, back_left, back_right = RectUtils.get_car_vertice_no_rotate(pos, car_size)
+        vert = RectUtils.get_car_vertice_no_rotate(pos, car_size)
+        angle = np.full((1, len(vert)), angle)
+        # x, y = pos
+        x, y = np.full_like(angle, pos[0]), np.full_like(angle, pos[1])
+        return np.concatenate(((vert[:,0]-x) * np.cos(angle) + (vert[:,1] - y) * np.sin(angle) + x ,
+                         -(vert[:,0]-x) * np.sin(angle) + (vert[:,1] - y) * np.cos(angle) + y ))
 
-        def rotate_vertice(vertice, angle):
-            angle = math.radians(angle)
-            return ((vertice[0] - x) * math.cos(angle) + (vertice[1] - y) * math.sin(angle) + x,
-                    -(vertice[0] - x) * math.sin(angle) + (vertice[1] - y) * math.cos(angle) + y)
-
-        front_left = rotate_vertice(front_left, angle)
-        front_right = rotate_vertice(front_right, angle)
-        back_left = rotate_vertice(back_left, angle)
-        back_right = rotate_vertice(back_right, angle)
-        return front_left, front_right, back_right, back_left
 
     @staticmethod
     def radar_pos(vertice):
-        fr_l, fr_r, bc_r, bc_l = vertice
-        fr_l, fr_r, bc_r, bc_l = np.array(fr_l), np.array(fr_r), np.array(bc_r), np.array(bc_l)
+        fr_l, fr_r, bc_r, bc_l = np.split(vertice, 4, axis = 1)
         r1 = dcopy((fr_l + bc_l)/2)
-        r2 = dcopy((r1+fr_l)/2)
-        r3 = dcopy(fr_l)
-        r4 = dcopy((fr_l+fr_r)/2)
-        r5 = dcopy(fr_r)
-        r7 = dcopy((fr_r+bc_r)/2)
-        r6 = dcopy((fr_r+r7)/2)
-        return [r1, r2, r3, r4, r5, r6, r7]
+        r2 = dcopy(fr_l)
+        r3 = dcopy((fr_l+fr_r)/2)
+        r4 = dcopy(fr_r)
+        r5 = dcopy((fr_r+bc_r)/2)
+        return np.concatenate((r1.reshape(1,2), r2.reshape(1,2), r3.reshape(1,2), r4.reshape(1,2), r5.reshape(1,2)))
 
 
 class ImageUtils:
 
     @staticmethod
-    def draw_map(size=2):
+    def draw_map(size=Config.map_scaler()):
         # image = ImageUtils.make_image(size, size)
         # return ImageUtils.draw_rect(image, (169,169,169))
         return Image.new('RGB', (size * Config.map_base(), size * Config.map_base()), Config.gray_rbg())
@@ -104,26 +95,38 @@ class ImageUtils:
         ImageDraw.Draw(image).polygon(vertice, fill=color, outline=outline)
 
     @staticmethod
+    def draw_laser(image, pos):
+        ImageDraw.Draw(image).line(pos, fill=(255,0,0), width=1, joint=None)
+
+
+    @staticmethod
     def draw_radar(image, radars, angle):
         r = 200
+        angles = np.array([-angle + math.pi/2, -angle + math.pi/4, -angle, -angle - math.pi/4, -angle - math.pi/2])
+        rx, ry = radars[:, 0] + r * np.cos(angles), radars[:, 1] + r * np.sin(angles)
+        for ra, x, y in zip(radars, rx, ry):
+            ImageUtils.draw_laser(image, [tuple(ra), (x, y)])
 
 
     @staticmethod
     def draw_car(image, pos, angle, car_size=1):
-        front_left, front_right, back_right, back_left = RectUtils.get_car_vertice(pos, angle, car_size)
+        angle = math.radians(angle)
 
-        ImageDraw.Draw(image).polygon((front_left, front_right, back_right, back_left), fill='blue',
+        # front_left, front_right, back_right, back_left = RectUtils.get_car_vertice(pos, angle, car_size)
+        vert = RectUtils.get_car_vertice(pos, angle, car_size)
+
+        ImageDraw.Draw(image).polygon((tuple(vert[:,0]), tuple(vert[:,1]), tuple(vert[:,2]), tuple(vert[:,3])), fill='blue',
                                       outline=(200, 0, 0))
 
-        radar_pos = RectUtils.radar_pos((front_left, front_right, back_right, back_left))
+        radar_pos = RectUtils.radar_pos(vert)
         ImageUtils.draw_radar(image, radar_pos, angle)
 
         # for r in radar_pos:
         #     ra = 1
         #     ImageDraw.Draw(image).ellipse((r[0] - ra, r[1] - ra, r[0] + ra, r[1] + ra), fill=(255, 0, 0, 0))
 
-        r = radar_pos[6]
-        ImageDraw.Draw(image).line([(r[0], r[1]), (200,200)], fill=(255,0,0), width=0, joint=None)
+        # r = radar_pos[0]
+        # ImageDraw.Draw(image).line([(r[0], r[1]), (200,200)], fill=(255,0,0), width=0, joint=None)
 
         # image.rotate(45)
         # img = Image.open('car.png')
@@ -132,15 +135,48 @@ class ImageUtils:
         # image.paste(img, (100, 100), mask=img)
         # image.show()
 
+    @staticmethod
+    def play_gif(path):
+        animation = pyglet.resource.animation(path)
+        sprite = pyglet.sprite.Sprite(animation)
+        win = pyglet.window.Window(width=sprite.width, height=sprite.height)
+        green = 0, 1, 0, 1
+        pyglet.gl.glClearColor(*green)
+
+        @win.event
+        def on_draw():
+            win.clear()
+            sprite.draw()
+
+        pyglet.app.run()
+
+
+    @staticmethod
+    def save_img_lst_2_gif(imgs):
+        imgs[0].save('out.gif',
+                    save_all=True,
+                    append_images=out[1::2],
+                    duration=1000 * 0.08,
+                    loop=0)
 
 def test_draw_car():
-    map = ImageUtils.draw_map()
-    # for i in range(10, 200, 50):
-    # ImageUtils.draw_car(map, (100, 10), 10)
-    # ImageUtils.draw_car(map, (100, 50), 45)
-    # ImageUtils.draw_car(map, (100, 90), 90)
-    ImageUtils.draw_car(map, (100, 180), 45)
-    map.show()
+
+    # map = ImageUtils.draw_map()
+    # ImageUtils.draw_car(map, (100, 100), )
+    # map.show()
+
+    out = []
+    for i in range(150):
+        map = ImageUtils.draw_map()
+        ImageUtils.draw_car(map, (100+i, 100), i)
+        out.append(map)
+    out[0].save('out.gif',
+                   save_all=True,
+                   append_images=out[1::2],
+                   duration=1000*0.08,
+                   loop=0)
+    ImageUtils.play_gif('out.gif')
+
 
 
 def test_sort_vertice():
