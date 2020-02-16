@@ -168,7 +168,7 @@ def test_draw_car():
     out = []
     for i in range(150):
         map = ImageUtils.draw_map()
-        ImageUtils.draw_car(map, (100+i, 100), i)
+        ImageUtils.draw_car(map, (i, 100), 0)
         out.append(map)
     out[0].save('out.gif',
                    save_all=True,
