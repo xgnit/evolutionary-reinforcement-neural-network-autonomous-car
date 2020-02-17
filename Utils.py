@@ -4,7 +4,7 @@ from Config import Config
 import numpy as np
 from copy import deepcopy as dcopy
 import pyglet
-
+from Map import Map
 
 class RectUtils:
     # useful for wall blocks, but not for the car, cause the dot product of the car's vertices might
@@ -114,7 +114,7 @@ class ImageUtils:
 
 
     @staticmethod
-    def draw_radar(image, radars, angle):
+    def draw_radar(image, radars, angle, wall_colider):
         r = 200
         angles = np.array([-angle + math.pi/2, -angle + math.pi/4, -angle, -angle - math.pi/4, -angle - math.pi/2])
         rx, ry = radars[:, 0] + r * np.cos(angles), radars[:, 1] + r * np.sin(angles)
@@ -123,7 +123,7 @@ class ImageUtils:
 
 
     @staticmethod
-    def draw_car(image, pos, angle, car_size=1):
+    def draw_car(image, pos, angle, wall_colider, car_size=1):
         angle = math.radians(angle)
 
         # front_left, front_right, back_right, back_left = RectUtils.get_car_vertice(pos, angle, car_size)
@@ -133,7 +133,7 @@ class ImageUtils:
                                       outline=(200, 0, 0))
 
         radar_pos = RectUtils.radar_pos(vert)
-        ImageUtils.draw_radar(image, radar_pos, angle)
+        ImageUtils.draw_radar(image, radar_pos, angle, wall_colider)
 
         # for r in radar_pos:
         #     ra = 1

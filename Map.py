@@ -14,7 +14,7 @@ class Map:
         # self.bg = ImageUtils.make_image(self.size, self.size)
         # ImageUtils.draw_rect(self.bg, ((0, 0), (0, 100), (100, 100), (100, 0)), color=(0, 200, 0))
         # self.bg.show()
-        self.path_generator()
+        self.generate_map()
 
     def map_frame_generator(self):
 
@@ -76,17 +76,8 @@ class Map:
         for b in blocks:
             draw_method(map, b)
 
-
-    def path_generator(self):
-
-        map_frame = self.map_frame_generator()
-        path_rects = [RectUtils.generate_block_vertice(0, self.grid_size-1, 0, 0)] + \
-                     self.get_path_rect(map_frame)
-
-        print(map_frame)
-        wall_rects = self.get_wall_rect(map_frame)
-        self.wall_colider = dcopy(wall_rects)
-        down_wall = (
+    def get_boundaries(self):
+        bottom_wall = (
             (0, self.grid_size * Config.path_width()),
             (0, Config.map_size()),
             (Config.map_size(), Config.map_size()),
@@ -98,8 +89,36 @@ class Map:
             (Config.map_size(), Config.map_size()),
             (Config.map_size(), 0)
         )
-        self.wall_colider.append(down_wall)
+        top_wall = (
+            (0,0),
+            (0,0),
+            (self.grid_size * Config.path_width(), 0),
+            (self.grid_size * Config.path_width(), 0)
+        )
+        left_wall = (
+            (0, 0),
+            (0, self.grid_size * Config.path_width()),
+            (0, self.grid_size * Config.path_width()),
+            (0, 0)
+        )
+        return bottom_wall, right_wall, top_wall, left_wall
+
+
+    def generate_map(self):
+
+        map_frame = self.map_frame_generator()
+        path_rects = [RectUtils.generate_block_vertice(0, self.grid_size-1, 0, 0)] + \
+                     self.get_path_rect(map_frame)
+
+        print(map_frame)
+        wall_rects = self.get_wall_rect(map_frame)
+        self.wall_colider = dcopy(wall_rects)
+
+        bot_wall, right_wall, top_wall, left_wall = self.get_boundaries()
+        self.wall_colider.append(bot_wall)
         self.wall_colider.append(right_wall)
+        self.wall_colider.append(top_wall)
+        self.wall_colider.append(left_wall)
 
         # self.bg = ImageUtils.make_image(Config.map_size(), Config.map_size())
         map = ImageUtils.draw_map()
@@ -107,9 +126,9 @@ class Map:
         self.draw_blocks(map, path_rects, ImageUtils.draw_path)
         self.draw_blocks(map, wall_rects, ImageUtils.draw_wall)
 
-        ImageUtils.draw_car(map, (20, 20), -30)
+        ImageUtils.draw_car(map, (20, 20), -30, self.wall_colider)
 
-        ImageUtils.draw_rect(map, down_wall, color='white')
+        ImageUtils.draw_rect(map, bot_wall, color='white')
         ImageUtils.draw_rect(map, right_wall, color='white')
         # ImageUtils.draw_rect(map, path_rects[0], color=(0, 200, 0))
 
