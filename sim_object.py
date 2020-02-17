@@ -54,6 +54,17 @@ class SimRect:
                 return False
         return True
 
+
+class CarColider:
+    def __init__(self):
+        pass
+
+
+class WallColider:
+    def __init__(self):
+        pass
+
+
 if __name__ == "__main__":
 
     a_vertices = [(0, 0), (70, 0), (0, 70)]

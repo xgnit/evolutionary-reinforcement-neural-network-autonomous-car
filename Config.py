@@ -9,14 +9,14 @@ class Config:
 
     @staticmethod
     def car_width_base():
-        return 15
+        return 20
     @classmethod
     def car_length_base(cls):
         return 2 * cls.car_width_base()
 
     @classmethod
     def path_width(cls):
-        return 2 * cls.car_width_base() + 10
+        return 2 * cls.car_width_base() + cls.car_width_base()//2
 
     @classmethod
     def map_size(cls):
@@ -29,5 +29,13 @@ class Config:
     def map_base():
         return 256
     @staticmethod
-    def gray_rbg():
+    def path_gray_rbg():
         return (169, 169, 169)
+
+    @staticmethod
+    def bg_rbg():
+        return (220, 220, 220)
+
+    @staticmethod
+    def wall_rbg():
+        return (64, 64, 64)

@@ -65,6 +65,12 @@ class RectUtils:
         return np.concatenate(((vert[:,0]-x) * np.cos(angle) + (vert[:,1] - y) * np.sin(angle) + x ,
                          -(vert[:,0]-x) * np.sin(angle) + (vert[:,1] - y) * np.cos(angle) + y ))
 
+    @staticmethod
+    def generate_block_vertice(row_start, row_end, col_start, col_end):
+        return ((col_start * Config.path_width(), row_start * Config.path_width()),
+                 (col_start * Config.path_width(), (row_end+1) * Config.path_width()),
+                 ((col_end+1) * Config.path_width(), (row_end+1) * Config.path_width()),
+                 ((col_end+1) * Config.path_width(), row_start * Config.path_width()))
 
     @staticmethod
     def radar_pos(vertice):
@@ -80,10 +86,10 @@ class RectUtils:
 class ImageUtils:
 
     @staticmethod
-    def draw_map(size=Config.map_scaler()):
+    def draw_map():
         # image = ImageUtils.make_image(size, size)
         # return ImageUtils.draw_rect(image, (169,169,169))
-        return Image.new('RGB', (size * Config.map_base(), size * Config.map_base()), Config.gray_rbg())
+        return Image.new('RGB', (Config.map_size(), Config.map_size()), Config.bg_rbg())
 
     @staticmethod
     def make_image(i, j):
@@ -93,6 +99,14 @@ class ImageUtils:
     def draw_rect(image, vertice, color=(200, 200, 200), outline=None):
         # im_ = image.load()
         ImageDraw.Draw(image).polygon(vertice, fill=color, outline=outline)
+
+    @classmethod
+    def draw_path(cls, image, vertice):
+        cls.draw_rect(image, vertice, color=Config.path_gray_rbg())
+
+    @classmethod
+    def draw_wall(cls, image, vertice):
+        cls.draw_rect(image, vertice, color=Config.wall_rbg())
 
     @staticmethod
     def draw_laser(image, pos):
@@ -158,6 +172,25 @@ class ImageUtils:
                     append_images=out[1::2],
                     duration=1000 * 0.08,
                     loop=0)
+
+
+class MiscUtils:
+
+    @staticmethod
+    def merge_neighbors(np_array):
+        if np_array.size > 0:
+            spliter = ','
+            tmp = np_array.copy()
+            res = str(tmp[0])
+            for i in range(1, len(tmp)):
+                if tmp[i] != tmp[i-1] + 1:
+                    res += spliter + str(tmp[i])
+                else:   res += str(tmp[i])
+            res = res.split(spliter)
+            res = [(int(x[0]), int(x[-1])) for x in res]
+            return res
+        else:   return []
+
 
 def test_draw_car():
 

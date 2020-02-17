@@ -1,23 +1,24 @@
-
 from Utils import *
 import numpy as np
 from Config import Config
+from copy import deepcopy as dcopy
 
 class Map:
 
-
-
     def __init__(self):
         self.margin = 10
+        self.grid_size = Config.map_size() // Config.path_width()
+
+        self.wall_colider = None
 
         # self.bg = ImageUtils.make_image(self.size, self.size)
         # ImageUtils.draw_rect(self.bg, ((0, 0), (0, 100), (100, 100), (100, 0)), color=(0, 200, 0))
         # self.bg.show()
         self.path_generator()
 
-    def map_frame_generator(self, map_size, path_width):
+    def map_frame_generator(self):
 
-        grid_no = map_size//path_width
+        grid_no = self.grid_size
         if grid_no < 3:
             raise RuntimeError('This map has less than 3 grids, cannot generate path')
         board = np.zeros([grid_no, grid_no])
@@ -56,21 +57,65 @@ class Map:
         dfs(start_pos)
         return board
 
+    def get_tile_rects(self, map_frame, tile_number):
+        res = []
+        for row in range(len(map_frame)):
+            walls = np.where(tile_number == map_frame[row])
+            walls = MiscUtils.merge_neighbors(walls[0])
+            for w in walls:
+                res.append(RectUtils.generate_block_vertice(row, row, w[0], w[1]))
+        return res
+
+    def get_path_rect(self, map_frame):
+        return self.get_tile_rects(map_frame, 1)
+
+    def get_wall_rect(self, map_frame):
+        return self.get_tile_rects(map_frame, 0)
+
+    def draw_blocks(self, map, blocks, draw_method):
+        for b in blocks:
+            draw_method(map, b)
+
 
     def path_generator(self):
 
-        def cluster_size(map_size, path_width):
-            pass
+        map_frame = self.map_frame_generator()
+        path_rects = [RectUtils.generate_block_vertice(0, self.grid_size-1, 0, 0)] + \
+                     self.get_path_rect(map_frame)
 
-
-        map_size = Config.map_size()
-        path_size = Config.path_width()
-        map_frame = self.map_frame_generator(map_size, path_size)
         print(map_frame)
+        wall_rects = self.get_wall_rect(map_frame)
+        self.wall_colider = dcopy(wall_rects)
+        down_wall = (
+            (0, self.grid_size * Config.path_width()),
+            (0, Config.map_size()),
+            (Config.map_size(), Config.map_size()),
+            (Config.map_size(), self.grid_size * Config.path_width())
+        )
+        right_wall = (
+            (self.grid_size * Config.path_width(), 0),
+            (self.grid_size * Config.path_width(), Config.map_size()),
+            (Config.map_size(), Config.map_size()),
+            (Config.map_size(), 0)
+        )
+        self.wall_colider.append(down_wall)
+        self.wall_colider.append(right_wall)
 
+        # self.bg = ImageUtils.make_image(Config.map_size(), Config.map_size())
+        map = ImageUtils.draw_map()
 
+        self.draw_blocks(map, path_rects, ImageUtils.draw_path)
+        self.draw_blocks(map, wall_rects, ImageUtils.draw_wall)
 
+        ImageUtils.draw_car(map, (20, 20), -30)
 
+        ImageUtils.draw_rect(map, down_wall, color='white')
+        ImageUtils.draw_rect(map, right_wall, color='white')
+        # ImageUtils.draw_rect(map, path_rects[0], color=(0, 200, 0))
+
+        # ImageUtils.draw_rect(self.bg, ((0, 0), (0, 100), (100, 100), (100, 0)), color=(0, 200, 0))
+        # self.bg.show()
+        map.show()
 
 
 if __name__ == "__main__":
