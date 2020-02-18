@@ -121,6 +121,7 @@ class Map:
         self.wall_colider.append(top_wall)
         self.wall_colider.append(left_wall)
 
+
         # self.bg = ImageUtils.make_image(Config.map_size(), Config.map_size())
         map = ImageUtils.draw_map()
 

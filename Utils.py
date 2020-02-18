@@ -85,7 +85,10 @@ class ColliderUtils:
     @staticmethod
     def collider_lines_from_path_rects(path_rects):
         pathes = np.array(path_rects)
-        left_side, bot_side, right_side, top_side = pathes[:,[0,1]], pathes[:,[1,2]], pathes[:,[2,3]], pathes[:,[3,1]]
+        # left, bot, right top
+        sides = [pathes[:,[0,1]], pathes[:,[1,2]], pathes[:,[2,3]], pathes[:,[3,1]]]
+        for s in sides:
+            print(1)
 
 
 
