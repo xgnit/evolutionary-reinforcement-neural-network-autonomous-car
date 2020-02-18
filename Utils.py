@@ -6,7 +6,7 @@ from copy import deepcopy as dcopy
 import pyglet
 from Map import Map
 
-class RectUtils:
+class ColliderUtils:
     # useful for wall blocks, but not for the car, cause the dot product of the car's vertices might
     # result in something equals a very small number but not zero
     @staticmethod
@@ -58,7 +58,7 @@ class RectUtils:
     @staticmethod
     def get_car_vertice(pos, angle, car_size=1):
         # front_left, front_right, back_left, back_right = RectUtils.get_car_vertice_no_rotate(pos, car_size)
-        vert = RectUtils.get_car_vertice_no_rotate(pos, car_size)
+        vert = ColliderUtils.get_car_vertice_no_rotate(pos, car_size)
         angle = np.full((1, len(vert)), angle)
         # x, y = pos
         x, y = np.full_like(angle, pos[0]), np.full_like(angle, pos[1])
@@ -82,6 +82,11 @@ class RectUtils:
         r5 = dcopy((fr_r+bc_r)/2)
         return np.concatenate((r1.reshape(1,2), r2.reshape(1,2), r3.reshape(1,2), r4.reshape(1,2), r5.reshape(1,2)))
 
+    @staticmethod
+    def collider_lines_from_path_rects(path_rests):
+
+
+        print(1)
 
 class ImageUtils:
 
@@ -114,7 +119,7 @@ class ImageUtils:
 
 
     @staticmethod
-    def draw_radar(image, radars, angle, wall_colider):
+    def draw_radar(image, radars, angle, collider_lines):
         r = 200
         angles = np.array([-angle + math.pi/2, -angle + math.pi/4, -angle, -angle - math.pi/4, -angle - math.pi/2])
         rx, ry = radars[:, 0] + r * np.cos(angles), radars[:, 1] + r * np.sin(angles)
@@ -123,17 +128,17 @@ class ImageUtils:
 
 
     @staticmethod
-    def draw_car(image, pos, angle, wall_colider, car_size=1):
+    def draw_car(image, pos, angle, collider_lines, car_size=1):
         angle = math.radians(angle)
 
         # front_left, front_right, back_right, back_left = RectUtils.get_car_vertice(pos, angle, car_size)
-        vert = RectUtils.get_car_vertice(pos, angle, car_size)
+        vert = ColliderUtils.get_car_vertice(pos, angle, car_size)
 
         ImageDraw.Draw(image).polygon((tuple(vert[:,0]), tuple(vert[:,1]), tuple(vert[:,2]), tuple(vert[:,3])), fill='blue',
                                       outline=(200, 0, 0))
 
-        radar_pos = RectUtils.radar_pos(vert)
-        ImageUtils.draw_radar(image, radar_pos, angle, wall_colider)
+        radar_pos = ColliderUtils.radar_pos(vert)
+        ImageUtils.draw_radar(image, radar_pos, angle, collider_lines)
 
         # for r in radar_pos:
         #     ra = 1
@@ -216,9 +221,9 @@ def test_sort_vertice():
     rect1 = [[0, 0], [0, 1], [1, 0], [1, 1]]
     rect2 = [[0, 0], [1, 1], [1, 0], [1, 0]]
     rect3 = [[0, 0], [1, 0], [0, 1], [1, 1]]
-    print(RectUtils.sort_vertice(rect1))
-    print(RectUtils.sort_vertice(rect2))
-    print(RectUtils.sort_vertice(rect3))
+    print(ColliderUtils.sort_vertice(rect1))
+    print(ColliderUtils.sort_vertice(rect2))
+    print(ColliderUtils.sort_vertice(rect3))
 
 
 def test_draw_rect():

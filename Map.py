@@ -63,7 +63,7 @@ class Map:
             walls = np.where(tile_number == map_frame[row])
             walls = MiscUtils.merge_neighbors(walls[0])
             for w in walls:
-                res.append(RectUtils.generate_block_vertice(row, row, w[0], w[1]))
+                res.append(ColliderUtils.generate_block_vertice(row, row, w[0], w[1]))
         return res
 
     def get_path_rect(self, map_frame):
@@ -107,8 +107,9 @@ class Map:
     def generate_map(self):
 
         map_frame = self.map_frame_generator()
-        path_rects = [RectUtils.generate_block_vertice(0, self.grid_size-1, 0, 0)] + \
-                     self.get_path_rect(map_frame)
+        # path_rects = [RectUtils.generate_block_vertice(0, self.grid_size-1, 0, 0)] + \
+        #              self.get_path_rect(map_frame)
+        path_rects = self.get_path_rect(map_frame)
 
         print(map_frame)
         wall_rects = self.get_wall_rect(map_frame)
@@ -123,10 +124,12 @@ class Map:
         # self.bg = ImageUtils.make_image(Config.map_size(), Config.map_size())
         map = ImageUtils.draw_map()
 
+        collider_lines = ColliderUtils.collider_lines_from_path_rects(path_rects)
+
         self.draw_blocks(map, path_rects, ImageUtils.draw_path)
         self.draw_blocks(map, wall_rects, ImageUtils.draw_wall)
 
-        ImageUtils.draw_car(map, (20, 20), -30, self.wall_colider)
+        ImageUtils.draw_car(map, (20, 20), -30, collider_lines)
 
         ImageUtils.draw_rect(map, bot_wall, color='white')
         ImageUtils.draw_rect(map, right_wall, color='white')
@@ -135,6 +138,8 @@ class Map:
         # ImageUtils.draw_rect(self.bg, ((0, 0), (0, 100), (100, 100), (100, 0)), color=(0, 200, 0))
         # self.bg.show()
         map.show()
+
+        print(1)
 
 
 if __name__ == "__main__":
