@@ -83,7 +83,12 @@ class ColliderUtils:
         return np.concatenate((r1.reshape(1,2), r2.reshape(1,2), r3.reshape(1,2), r4.reshape(1,2), r5.reshape(1,2)))
 
     @staticmethod
-    def collider_lines_from_path_rects(path_rests):
+    def collider_lines_from_path_rects(path_rects):
+        pathes = np.array(path_rects)
+        left_side, bot_side, right_side, top_side = pathes[:,[0,1]], pathes[:,[1,2]], pathes[:,[2,3]], pathes[:,[3,1]]
+
+
+
 
 
         print(1)
