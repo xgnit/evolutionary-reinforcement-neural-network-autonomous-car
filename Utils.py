@@ -86,15 +86,90 @@ class ColliderUtils:
     def collider_lines_from_path_rects(path_rects):
         pathes = np.array(path_rects)
         # left, bot, right top
-        sides = [pathes[:,[0,1]], pathes[:,[1,2]], pathes[:,[2,3]], pathes[:,[3,1]]]
-        for s in sides:
-            print(1)
+        left_side, bot_side, right_side, top_side = \
+            pathes[:,[0,1]], pathes[:,[1,2]], pathes[:,[2,3]], pathes[:,[3,0]]
+
+        left_border = np.array([[0, 0], [0, Config.used_map_size()]])
+        right_border = np.array([[Config.used_map_size(), 0], [Config.used_map_size(), Config.used_map_size()]])
+        top_border = np.array([[0, 0], [Config.used_map_size(), 0]])
+        bot_border = np.array([[0, Config.used_map_size()], [Config.used_map_size(), Config.used_map_size()]])
+
+        left_side = np.insert(left_side, 1, left_border, axis=0)
+        right_side = np.insert(right_side, 1, right_border, axis=0)
+        top_side = np.insert(top_side, 1, top_border, axis=0)
+        bot_side = np.insert(bot_side, 1, bot_border, axis=0)
+
+        def merge_lines(l1, l2, axis):
+            axis = 0 if 'v' == axis else 1
+            anker = l1[0, axis]
+            axis = 0 if axis == 1 else 1
+            start = min(np.hstack([l1[:,axis], l2[:,axis]]))
+            end = max(np.hstack([l1[:,axis], l2[:,axis]]))
+            if 1 == axis:
+                return np.array([[anker, start],[anker, end]])
+            else:   return np.array([[start, anker], [end, anker]])
+
+
+        def can_merge(l1, l2, axis):
+            axis = 0 if 'v' == axis else 1
+            if l1[0, axis] == l2[0, axis]:
+                axis = 0 if axis == 1 else 1
+                p1, p2 = min(l1[:,axis]), max(l1[:,axis])
+                p3, p4 = min(l2[:,axis]), max(l2[:,axis])
+                if p2 < p3 or p4 < p1:  return False
+                else:   return True
+            else:  return False
+
+        def extract_lines(lines, axis):
+
+            merged = []
+            saved = set()
+            visited = set()
+            for i in range(len(lines)):
+                if i in visited:
+                    continue
+                tmp = lines[i]
+
+                for m in range(len(merged)):
+                    if can_merge(tmp, merged[m], axis):
+                        tmp = merge_lines(tmp, merged[m], axis)
+
+                for j in range(1, len(lines)):
+                    if j not in visited and can_merge(tmp, lines[j], axis):
+                        tmp = merge_lines(tmp, lines[j], axis)
+                        visited.add(j)
+                if tmp.tobytes() not in saved:
+                    merged.append(tmp)
+                    saved.add(tmp.tobytes())
+            return merged
+
+        vertical_lines = extract_lines(np.vstack([left_side, right_side]), 'v')
+        horizontal_lines = extract_lines(np.vstack([top_side, bot_side]), 'h')
+
+        def in_path_rects(line):
+            pass
+
+        def filter_horizontal_lines(h_lines):
+            tmp = []
+            for l in h_lines:
+                anker = l[0,1]
+                start, end = min(l[:,0]), max(l[:,0])
+                line1 = [[start, anker], [start+50, anker]]
+                line2 = [[end-50, anker], [end, anker]]
+                if in_path_rects(line1):
+                    start += 50
+                if in_path_rects(line2):
+                    end -= 50
+                if start < end:
+                    tmp.append([[start, anker], [end, anker]])
+            return np.array(tmp)
 
 
 
-
-
-        print(1)
+        horizontal_lines = filter_horizontal_lines(horizontal_lines)
+        vertical_lines.extend(horizontal_lines)
+        return vertical_lines
+        # return vertical_lines, horizontal_lines
 
 class ImageUtils:
 

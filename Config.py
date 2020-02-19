@@ -36,6 +36,14 @@ class Config:
     def bg_rbg():
         return (220, 220, 220)
 
+    @classmethod
+    def grid_size(cls):
+        return cls.map_size() // cls.path_width()
+
     @staticmethod
     def wall_rbg():
         return (64, 64, 64)
+
+    @classmethod
+    def used_map_size(cls):
+        return cls.path_width() * cls.grid_size()

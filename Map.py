@@ -10,6 +10,7 @@ class Map:
         self.grid_size = Config.map_size() // Config.path_width()
 
         self.wall_colider = None
+        self.collider_lines = None
 
         # self.bg = ImageUtils.make_image(self.size, self.size)
         # ImageUtils.draw_rect(self.bg, ((0, 0), (0, 100), (100, 100), (100, 0)), color=(0, 200, 0))
@@ -131,11 +132,14 @@ class Map:
         self.draw_blocks(map, wall_rects, ImageUtils.draw_wall)
 
         ImageUtils.draw_car(map, (20, 20), -30, collider_lines)
-
         ImageUtils.draw_rect(map, bot_wall, color='white')
         ImageUtils.draw_rect(map, right_wall, color='white')
-        # ImageUtils.draw_rect(map, path_rects[0], color=(0, 200, 0))
 
+        for l in collider_lines:
+            # l = ()
+            ImageDraw.Draw(map).line([tuple(l[0]), tuple(l[1])], fill=(0,255,0), width=2)
+
+        # ImageUtils.draw_rect(map, path_rects[0], color=(0, 200, 0))
         # ImageUtils.draw_rect(self.bg, ((0, 0), (0, 100), (100, 100), (100, 0)), color=(0, 200, 0))
         # self.bg.show()
         map.show()
