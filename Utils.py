@@ -4,7 +4,8 @@ from Config import Config
 import numpy as np
 from copy import deepcopy as dcopy
 import pyglet
-from Map import Map
+import shapely
+from shapely.geometry import LineString
 
 class ColliderUtils:
     # useful for wall blocks, but not for the car, cause the dot product of the car's vertices might
@@ -146,20 +147,38 @@ class ColliderUtils:
         vertical_lines = extract_lines(np.vstack([left_side, right_side]), 'v')
         horizontal_lines = extract_lines(np.vstack([top_side, bot_side]), 'h')
 
+
+        def match_side(side, line):
+            side_match = side[:,0][:,1] == line[0][1]
+            for l in side[side_match]:
+                start, end = np.min(l[:,0]), np.max(l[:,0])
+                if start <= np.min(np.array(line)[:,0]) and end >= np.max(np.array(line)[:,0]):
+                    return True
+            return False
+
+        def match_bot_side_path_rect(line):
+            return match_side(bot_side, line)
+
+        def match_top_side_path_rect(line):
+            return match_side(top_side, line)
+
         def in_path_rects(line):
-            pass
+            if match_bot_side_path_rect(line) and match_top_side_path_rect(line):
+                return True
+            else:   return False
 
         def filter_horizontal_lines(h_lines):
+            step = Config.path_width()
             tmp = []
             for l in h_lines:
                 anker = l[0,1]
                 start, end = min(l[:,0]), max(l[:,0])
-                line1 = [[start, anker], [start+50, anker]]
-                line2 = [[end-50, anker], [end, anker]]
+                line1 = [[start, anker], [start+step, anker]]
+                line2 = [[end-step, anker], [end, anker]]
                 if in_path_rects(line1):
-                    start += 50
+                    start += step
                 if in_path_rects(line2):
-                    end -= 50
+                    end -= step
                 if start < end:
                     tmp.append([[start, anker], [end, anker]])
             return np.array(tmp)
@@ -170,6 +189,34 @@ class ColliderUtils:
         vertical_lines.extend(horizontal_lines)
         return vertical_lines
         # return vertical_lines, horizontal_lines
+
+    @staticmethod
+    def shortest_cut(radar_pos, angles, collider_lines):
+        # rx, ry = radars[:, 0] + r * np.cos(angle), radars[:, 1] + r * np.sin(angle)
+
+        res = []
+        r = Config.map_size() * 4
+
+        def calc_dist(point, end_point_of_radar, line):
+
+            l1 = LineString([point, end_point_of_radar])
+            l2 = LineString([line[0], line[1]])
+            intersect = l1.intersection(l2)
+            if shapely.geometry.linestring.LineString == type(intersect):
+                return math.inf, None
+            else:
+                return intersect.distance(shapely.geometry.Point(point)), intersect
+
+        for radar, angle in zip(radar_pos, angles):
+            shortest_dist, point = math.inf, None
+            for line in collider_lines:
+                end_point_of_radar = np.array([radar[0] + r * np.cos(angle), radar[1] + r * np.sin(angle)])
+                res_dist, res_point = calc_dist(radar, end_point_of_radar, line)
+                if res_dist < shortest_dist:
+                    shortest_dist = res_dist
+                    point = res_point
+            res.append((point.x, point.y))
+        return np.array(res)
 
 class ImageUtils:
 
@@ -203,11 +250,11 @@ class ImageUtils:
 
     @staticmethod
     def draw_radar(image, radars, angle, collider_lines):
-        r = 200
-        angles = np.array([-angle + math.pi/2, -angle + math.pi/4, -angle, -angle - math.pi/4, -angle - math.pi/2])
-        rx, ry = radars[:, 0] + r * np.cos(angles), radars[:, 1] + r * np.sin(angles)
-        for ra, x, y in zip(radars, rx, ry):
-            ImageUtils.draw_laser(image, [tuple(ra), (x, y)])
+        angle = np.array([-angle + math.pi/2, -angle + math.pi/4, -angle, -angle - math.pi/4, -angle - math.pi/2])
+        end_pos = ColliderUtils.shortest_cut(radars, angle, collider_lines)
+        # rx, ry = radars[:, 0] + r * np.cos(angle), radars[:, 1] + r * np.sin(angle)
+        for ra, end in zip(radars, end_pos):
+            ImageUtils.draw_laser(image, [tuple(ra), (end[0], end[1])])
 
 
     @staticmethod

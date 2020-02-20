@@ -7,9 +7,8 @@ class Map:
 
     def __init__(self):
         self.margin = 10
-        self.grid_size = Config.map_size() // Config.path_width()
+        self.grid_size = Config.grid_size()
 
-        self.wall_colider = None
         self.collider_lines = None
 
         # self.bg = ImageUtils.make_image(self.size, self.size)
@@ -111,33 +110,35 @@ class Map:
         # path_rects = [RectUtils.generate_block_vertice(0, self.grid_size-1, 0, 0)] + \
         #              self.get_path_rect(map_frame)
         path_rects = self.get_path_rect(map_frame)
-
-        print(map_frame)
+        # print(map_frame)
         wall_rects = self.get_wall_rect(map_frame)
-        self.wall_colider = dcopy(wall_rects)
-
         bot_wall, right_wall, top_wall, left_wall = self.get_boundaries()
-        self.wall_colider.append(bot_wall)
-        self.wall_colider.append(right_wall)
-        self.wall_colider.append(top_wall)
-        self.wall_colider.append(left_wall)
-
 
         # self.bg = ImageUtils.make_image(Config.map_size(), Config.map_size())
         map = ImageUtils.draw_map()
 
-        collider_lines = ColliderUtils.collider_lines_from_path_rects(path_rects)
+        self.collider_lines = ColliderUtils.collider_lines_from_path_rects(path_rects)
 
         self.draw_blocks(map, path_rects, ImageUtils.draw_path)
         self.draw_blocks(map, wall_rects, ImageUtils.draw_wall)
 
-        ImageUtils.draw_car(map, (20, 20), -30, collider_lines)
+        ImageUtils.draw_car(map, (100, 30), 0, self.collider_lines)
         ImageUtils.draw_rect(map, bot_wall, color='white')
         ImageUtils.draw_rect(map, right_wall, color='white')
 
-        for l in collider_lines:
-            # l = ()
+        for l in self.collider_lines:
             ImageDraw.Draw(map).line([tuple(l[0]), tuple(l[1])], fill=(0,255,0), width=2)
+
+        # out = []
+        # for i in range(150):
+        #     ImageUtils.draw_car(map, (i, 100), 0, self.collider_lines)
+        #     out.append(map)
+        # out[0].save('out.gif',
+        #             save_all=True,
+        #             append_images=out[1::2],
+        #             duration=1000 * 0.08,
+        #             loop=0)
+        # ImageUtils.play_gif('out.gif')
 
         # ImageUtils.draw_rect(map, path_rects[0], color=(0, 200, 0))
         # ImageUtils.draw_rect(self.bg, ((0, 0), (0, 100), (100, 100), (100, 0)), color=(0, 200, 0))

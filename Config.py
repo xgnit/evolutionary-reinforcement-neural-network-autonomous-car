@@ -16,7 +16,7 @@ class Config:
 
     @classmethod
     def path_width(cls):
-        return 2 * cls.car_width_base() + cls.car_width_base()//2
+        return 2 * cls.car_width_base() + cls.car_width_base()
 
     @classmethod
     def map_size(cls):
