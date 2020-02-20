@@ -19,7 +19,7 @@ class Config:
 
     @staticmethod
     def map_scaler():
-        return 2
+        return 3
     @staticmethod
     def map_base():
         return 256

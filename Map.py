@@ -125,9 +125,12 @@ class Map:
         ImageUtils.draw_car(map, (100, 30), 0, self.collider_lines)
         ImageUtils.draw_rect(map, bot_wall, color='white')
         ImageUtils.draw_rect(map, right_wall, color='white')
-
         for l in self.collider_lines:
             ImageDraw.Draw(map).line([tuple(l[0]), tuple(l[1])], fill=(0,255,0), width=2)
+
+
+
+
 
         # out = []
         # for i in range(150):

@@ -314,16 +314,21 @@ class MiscUtils:
     @staticmethod
     def merge_neighbors(np_array):
         if np_array.size > 0:
-            spliter = ','
+            spliter_bt_segment = ','
+            spliter_bt_no = '#'
+
             tmp = np_array.copy()
             res = str(tmp[0])
             for i in range(1, len(tmp)):
-                if tmp[i] != tmp[i-1] + 1:
-                    res += spliter + str(tmp[i])
-                else:   res += str(tmp[i])
-            res = res.split(spliter)
-            res = [(int(x[0]), int(x[-1])) for x in res]
-            return res
+                if tmp[i] != tmp[i - 1] + 1:
+                    res += spliter_bt_segment + str(tmp[i])
+                else:
+                    res += spliter_bt_no + str(tmp[i])
+            res = res.split(spliter_bt_segment)
+            ans = []
+            for i in res:
+                ans.append((int(i.split(spliter_bt_no)[0]), int(i.split(spliter_bt_no)[-1])))
+            return ans
         else:   return []
 
 
