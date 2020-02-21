@@ -145,7 +145,7 @@ class Map:
     def test_map(self):
 
         movie = []
-        for i in range(360):
+        for i in range(50):
             m = self.draw_map_bg()
             ImageUtils.draw_car(m, (100, 30), i, self.collider_lines)
             movie.append(m)
@@ -158,5 +158,5 @@ class Map:
 
 if __name__ == "__main__":
     m = Map()
-    # m.test_map()
-    m.static_test_map()
+    m.test_map()
+    # m.static_test_map()
