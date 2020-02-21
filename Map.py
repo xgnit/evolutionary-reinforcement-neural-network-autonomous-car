@@ -9,11 +9,9 @@ class Map:
         self.margin = 10
         self.grid_size = Config.grid_size()
 
-        self.collider_lines = None
+        self.collider_lines, self.path_rects, self.wall_rects = None, None, None
+        self.bot_wall, self.right_wall, self.top_wall, self.left_wall = None, None, None, None
 
-        # self.bg = ImageUtils.make_image(self.size, self.size)
-        # ImageUtils.draw_rect(self.bg, ((0, 0), (0, 100), (100, 100), (100, 0)), color=(0, 200, 0))
-        # self.bg.show()
         self.generate_map()
 
     def map_frame_generator(self):
@@ -109,47 +107,56 @@ class Map:
         map_frame = self.map_frame_generator()
         # path_rects = [RectUtils.generate_block_vertice(0, self.grid_size-1, 0, 0)] + \
         #              self.get_path_rect(map_frame)
-        path_rects = self.get_path_rect(map_frame)
+        self.path_rects = self.get_path_rect(map_frame)
         # print(map_frame)
-        wall_rects = self.get_wall_rect(map_frame)
-        bot_wall, right_wall, top_wall, left_wall = self.get_boundaries()
+        self.wall_rects = self.get_wall_rect(map_frame)
+        self.bot_wall, self.right_wall, self.top_wall, self.left_wall = self.get_boundaries()
 
         # self.bg = ImageUtils.make_image(Config.map_size(), Config.map_size())
-        map = ImageUtils.draw_map()
-
-        self.collider_lines = ColliderUtils.collider_lines_from_path_rects(path_rects)
-
-        self.draw_blocks(map, path_rects, ImageUtils.draw_path)
-        self.draw_blocks(map, wall_rects, ImageUtils.draw_wall)
-
-        ImageUtils.draw_car(map, (100, 30), 0, self.collider_lines)
-        ImageUtils.draw_rect(map, bot_wall, color='white')
-        ImageUtils.draw_rect(map, right_wall, color='white')
-        for l in self.collider_lines:
-            ImageDraw.Draw(map).line([tuple(l[0]), tuple(l[1])], fill=(0,255,0), width=2)
-
-
-
-
-
-        # out = []
-        # for i in range(150):
-        #     ImageUtils.draw_car(map, (i, 100), 0, self.collider_lines)
-        #     out.append(map)
-        # out[0].save('out.gif',
-        #             save_all=True,
-        #             append_images=out[1::2],
-        #             duration=1000 * 0.08,
-        #             loop=0)
-        # ImageUtils.play_gif('out.gif')
+        self.collider_lines = ColliderUtils.collider_lines_from_path_rects(self.path_rects)
 
         # ImageUtils.draw_rect(map, path_rects[0], color=(0, 200, 0))
         # ImageUtils.draw_rect(self.bg, ((0, 0), (0, 100), (100, 100), (100, 0)), color=(0, 200, 0))
         # self.bg.show()
-        map.show()
 
-        print(1)
+    def draw_map_bg(self):
+
+        map_image = ImageUtils.draw_map()
+        self.draw_blocks(map_image, self.path_rects, ImageUtils.draw_path)
+        self.draw_blocks(map_image, self.wall_rects, ImageUtils.draw_wall)
+        ImageUtils.draw_rect(map_image, self.bot_wall, color='white')
+        ImageUtils.draw_rect(map_image, self.right_wall, color='white')
+        for l in self.collider_lines:
+            ImageDraw.Draw(map_image).line([tuple(l[0]), tuple(l[1])], fill=(0,255,0), width=2)
+        return map_image
+
+    def static_test_map(self):
+        m = self.draw_map_bg()
+        # for w in self.wall_rects:
+        #     ImageUtils.draw_rect(m, w, color='red')
+        pos = (100, 20)
+        angle = 30
+        if ColliderUtils.collision((pos, angle), self.wall_rects):
+            ImageUtils.draw_car(m, pos, angle, self.collider_lines, 'red')
+        else:
+            ImageUtils.draw_car(m, pos, angle, self.collider_lines)
+        m.show()
+
+    def test_map(self):
+
+        movie = []
+        for i in range(360):
+            m = self.draw_map_bg()
+            ImageUtils.draw_car(m, (100, 30), i, self.collider_lines)
+            movie.append(m)
+        ImageUtils.save_img_lst_2_gif(movie, 'out.gif')
+        ImageUtils.play_gif('out.gif')
+            # map.show()
+
+
 
 
 if __name__ == "__main__":
     m = Map()
+    # m.test_map()
+    m.static_test_map()

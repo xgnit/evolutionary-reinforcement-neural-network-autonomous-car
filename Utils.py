@@ -5,7 +5,7 @@ import numpy as np
 from copy import deepcopy as dcopy
 import pyglet
 import shapely
-from shapely.geometry import LineString
+from shapely.geometry import LineString, Point, Polygon
 
 class ColliderUtils:
     # useful for wall blocks, but not for the car, cause the dot product of the car's vertices might
@@ -36,6 +36,36 @@ class ColliderUtils:
                 return [v1, v3, v4, v2]
             else:
                 return [v1, v3, v2, v4]
+
+    @staticmethod
+    def collision(car_pos, wall_rects):
+
+        pos, angle = car_pos
+        angle = math.radians(angle)
+
+        # front_left, front_right, back_right, back_left = RectUtils.get_car_vertice(pos, angle, car_size)
+        vert = ColliderUtils.get_car_vertice(pos, angle)
+        def get_all_car_collider_pos(car_vertice):
+            return [
+                car_vertice[:,0], car_vertice[:,1], car_vertice[:,2], car_vertice[:,3],
+                (car_vertice[:,0] + car_vertice[:,1])/2, (car_vertice[:,1] + car_vertice[:,2])/2,
+                (car_vertice[:,2] + car_vertice[:,3])/2, (car_vertice[:,3] + car_vertice[:,0])/2
+            ]
+        car_colliders = get_all_car_collider_pos(vert)
+        points = [Point(x) for x in car_colliders]
+        rects = [Polygon(x) for x in wall_rects]
+        for p in points:
+            for r in rects:
+                if p.within(r):
+                    return True
+        used_map = ((0,0), (0, Config.used_map_size()),
+                    (Config.used_map_size(), Config.used_map_size()),
+                    (Config.used_map_size(), 0))
+        used_map_rect = Polygon(used_map)
+        for p in points:
+            if not p.within(used_map_rect):
+                return True
+        return False
 
     @staticmethod
     def get_car_vertice_no_rotate(pos, car_size):
@@ -215,7 +245,10 @@ class ColliderUtils:
                 if res_dist < shortest_dist:
                     shortest_dist = res_dist
                     point = res_point
-            res.append((point.x, point.y))
+            if point:
+                res.append((point.x, point.y))
+            else:
+                res.append((radar[0], radar[1]))
         return np.array(res)
 
 class ImageUtils:
@@ -258,14 +291,14 @@ class ImageUtils:
 
 
     @staticmethod
-    def draw_car(image, pos, angle, collider_lines, car_size=1):
+    def draw_car(image, pos, angle, collider_lines, car_color='blue', car_size=1):
         angle = math.radians(angle)
 
         # front_left, front_right, back_right, back_left = RectUtils.get_car_vertice(pos, angle, car_size)
         vert = ColliderUtils.get_car_vertice(pos, angle, car_size)
 
-        ImageDraw.Draw(image).polygon((tuple(vert[:,0]), tuple(vert[:,1]), tuple(vert[:,2]), tuple(vert[:,3])), fill='blue',
-                                      outline=(200, 0, 0))
+        ImageDraw.Draw(image).polygon((tuple(vert[:,0]), tuple(vert[:,1]), tuple(vert[:,2]), tuple(vert[:,3])),
+                                      fill=car_color, outline=(200, 0, 0))
 
         radar_pos = ColliderUtils.radar_pos(vert)
         ImageUtils.draw_radar(image, radar_pos, angle, collider_lines)
@@ -301,10 +334,10 @@ class ImageUtils:
 
 
     @staticmethod
-    def save_img_lst_2_gif(imgs):
-        imgs[0].save('out.gif',
+    def save_img_lst_2_gif(imgs, path):
+        imgs[0].save(path,
                     save_all=True,
-                    append_images=out[1::2],
+                    append_images=imgs[1::2],
                     duration=1000 * 0.08,
                     loop=0)
 
