@@ -364,6 +364,12 @@ class MiscUtils:
             return ans
         else:   return []
 
+    @staticmethod
+    def get_next_pos(pos, orientation, speed):
+        angle = -math.radians(orientation)
+        pos = (pos[0] + speed * math.cos(angle), pos[1] + speed * math.sin(angle))
+        return pos
+
 
 def test_draw_car():
 

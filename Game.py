@@ -1,6 +1,6 @@
 
 from Map import Map
-from Utils import ImageUtils, ColliderUtils
+from Utils import ImageUtils, ColliderUtils, MiscUtils
 import os, neat
 
 class Game:
@@ -9,7 +9,9 @@ class Game:
         self.map = Map()
         self.colliders = self.map.collider_lines
         self.wall_rects = self.map.wall_rects
-        self.test_game()
+        self.result_file = 'out.gif'
+
+
 
     def eval_genomes(self):
         pass
@@ -29,21 +31,42 @@ class Game:
 
 
 
+    def single_drive(self):
+
+        def update_orientation(old_orientation):
+            return old_orientation + 1
+
+        movie = []
+        pos = (100, 30)
+        orientation = -10
+        speed = 10
+
+        while 1:
+
+            if ColliderUtils.collision((pos, orientation), self.wall_rects):
+                break
+            m = self.map.draw_map_bg()
+            ImageUtils.draw_car(m, pos, orientation, self.colliders)
+            movie.append(m)
+            pos = MiscUtils.get_next_pos(pos, orientation, speed)
+            orientation = update_orientation(orientation)
+
+
+        ImageUtils.save_img_lst_2_gif(movie, self.result_file)
+        ImageUtils.play_gif(self.result_file)
+
 
     def test_game(self):
 
         movie = []
-        for i in range(360):
+        for i in range(50):
             m = self.map.draw_map_bg()
-
-
-
             ImageUtils.draw_car(m, (100, 30), i, self.colliders)
             movie.append(m)
-        ImageUtils.save_img_lst_2_gif(movie, 'out.gif')
-        ImageUtils.play_gif('out.gif')
+        ImageUtils.save_img_lst_2_gif(movie, self.result_file)
+        ImageUtils.play_gif(self.result_file)
 
 
 if __name__ == "__main__":
-    Game().test_game()
+    Game().single_drive()
 
