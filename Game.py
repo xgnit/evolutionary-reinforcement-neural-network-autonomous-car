@@ -34,12 +34,12 @@ class Game:
     def single_drive(self):
 
         def update_orientation(old_orientation):
-            return old_orientation + 1
+            return old_orientation + 0.3
 
         movie = []
         pos = (100, 30)
-        orientation = -10
-        speed = 10
+        orientation = -15
+        speed = 2
 
         while 1:
 
