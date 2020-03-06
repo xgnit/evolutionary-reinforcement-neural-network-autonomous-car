@@ -31,7 +31,9 @@ class Game:
 
 
 
-    def single_drive(self):
+
+
+    def single_drive_single_car(self):
 
         def update_orientation(old_orientation):
             return old_orientation + 0.3
@@ -55,6 +57,9 @@ class Game:
         ImageUtils.save_img_lst_2_gif(movie, self.result_file)
         ImageUtils.play_gif(self.result_file)
 
+    def single_drive_single_multiple_cars(self):
+        pass
+
 
     def test_game(self):
 
@@ -68,5 +73,5 @@ class Game:
 
 
 if __name__ == "__main__":
-    Game().single_drive()
+    Game().single_drive_single_car()
 

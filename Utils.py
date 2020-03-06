@@ -292,13 +292,14 @@ class ImageUtils:
 
     @staticmethod
     def draw_car(image, pos, angle, collider_lines, car_color='blue', car_size=1):
+        angle_degree = angle
         angle = math.radians(angle)
 
         # front_left, front_right, back_right, back_left = RectUtils.get_car_vertice(pos, angle, car_size)
         vert = ColliderUtils.get_car_vertice(pos, angle, car_size)
 
         ImageDraw.Draw(image).polygon((tuple(vert[:,0]), tuple(vert[:,1]), tuple(vert[:,2]), tuple(vert[:,3])),
-                                      fill=car_color, outline=(200, 0, 0))
+                                      fill=None, outline=(200, 0, 0))
 
         radar_pos = ColliderUtils.radar_pos(vert)
         ImageUtils.draw_radar(image, radar_pos, angle, collider_lines)
@@ -311,10 +312,13 @@ class ImageUtils:
         # ImageDraw.Draw(image).line([(r[0], r[1]), (200,200)], fill=(255,0,0), width=0, joint=None)
 
         # image.rotate(45)
-        # img = Image.open('car.png')
-        # img = img.rotate(angle)
-        # img = img.resize((50, 50)).convert("RGBA")
-        # image.paste(img, (100, 100), mask=img)
+        # 因为image的size是 Config.car_width_base()*3，所以中心到左上角顶点的距离就是一半
+        x, y = int(pos[0] - Config.car_width_base() * 1.5), int(pos[1] - Config.car_width_base()*1.5)
+
+        img = Image.open('car.png')
+        img = img.rotate(angle_degree)
+        img = img.resize((Config.car_width_base()*3, Config.car_width_base()*3)).convert("RGBA")
+        image.paste(img, (x,y), mask=img)
         # image.show()
 
     @staticmethod
