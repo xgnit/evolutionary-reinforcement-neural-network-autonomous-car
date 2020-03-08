@@ -289,6 +289,22 @@ class ImageUtils:
         for ra, end in zip(radars, end_pos):
             ImageUtils.draw_laser(image, [tuple(ra), (end[0], end[1])])
 
+    @staticmethod
+    def radar_measurement(radar_pos, collider, angle):
+        angle = np.array([-angle + math.pi/2, -angle + math.pi/4, -angle, -angle - math.pi/4, -angle - math.pi/2])
+        end_pos = ColliderUtils.shortest_cut(radar_pos, angle, collider)
+        res = radar_pos.copy() - end_pos.copy()
+        res = np.power(res[:,0],2) + np.power(res[:,1],2)
+        return tuple(np.power(res, 0.5))
+
+
+
+    @staticmethod
+    def radar_data(pos, angle, collider):
+        angle = math.radians(angle)
+        vert = ColliderUtils.get_car_vertice(pos, angle)
+        radar_pos = ColliderUtils.radar_pos(vert)
+        return ImageUtils.radar_measurement(radar_pos, collider, angle)
 
     @staticmethod
     def draw_car(image, pos, angle, collider_lines, car_color='blue', car_size=1):
