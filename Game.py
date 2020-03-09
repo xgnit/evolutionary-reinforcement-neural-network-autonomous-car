@@ -14,50 +14,66 @@ class Game:
         self.result_file = 'out.gif'
         self.best = 0
 
+    def single_drive_with_whole_population(self, nn_list):
 
-    def single_drive_with_nn(self, nn):
-
+        marker = np.zeros_like(nn_list, dtype=bool)
 
         def update_range(range, old_pos, new_pos):
             res = np.array(old_pos) - np.array(new_pos)
             return range + (res[0]**2 + res[1]**2)**0.5
 
+        travel_range = np.zeros_like(nn_list)
         movie = []
-        travel_range = 0
-        pos = (100, 30)
-        orientation = 20
+        # pos = np.full_like(nn_list, (100, 30))
+        pos = np.empty_like(nn_list)
+        for i in range(len(pos)):
+            pos[i] = (100, 30)
+        orientation = np.full_like(nn_list, 20)
+
         speed = 2.5
 
         while 1:
 
-            if ColliderUtils.collision((pos, orientation), self.wall_rects):
-
-                if travel_range > self.best:
-                    ImageUtils.save_img_lst_2_gif(movie, 'res/' + str(time.time()) + self.result_file)
-                    self.best = travel_range
-                # ImageUtils.play_gif(self.result_file)
+            if np.all(marker):
+                ImageUtils.save_img_lst_2_gif(movie, 'res/' + str(time.time()) + self.result_file)
                 return travel_range
+
             m = self.map.draw_map_bg()
-            ImageUtils.draw_car(m, pos, orientation, self.colliders)
+            for i in range(len(nn_list)):
+                p, o, nn = pos[i], orientation[i], nn_list[i]
+
+                if ColliderUtils.collision((p, o), self.wall_rects):
+                    marker[i] = True
+
+                ImageUtils.draw_car(m, p, o, self.colliders)
+
+                if marker[i]:
+                    continue
+
+                radar_data = ImageUtils.radar_data(p, o, self.colliders)
+                pos_new = MiscUtils.get_next_pos(p, o, speed)
+                travel_range[i] = update_range(travel_range[i], p, pos_new)
+                pos[i] = pos_new
+
+                left, right = nn.activate(radar_data)
+                orientation[i] += (left-right)
+
             movie.append(m)
-            radar_data = ImageUtils.radar_data(pos, orientation, self.colliders)
 
-            pos_new = MiscUtils.get_next_pos(pos, orientation, speed)
-            travel_range = update_range(travel_range, pos, pos_new)
-            pos = pos_new
-            left, right = nn.activate(radar_data)
-            orientation += (left-right)
 
+    def eval_genomes(self, genomes, config):
+        nn_list = []
+        for genome_id, genome in genomes:
+            genome.fitness = 0
+            net = neat.nn.FeedForwardNetwork.create(genome, config)
+            nn_list.append(net)
+
+        pop_fitness = self.single_drive_with_whole_population(nn_list)
+
+        for gen_id, genome in genomes:
+            genome.fitness = pop_fitness[gen_id-1]
 
     def run(self):
-
-        def eval_genomes(genomes, config):
-            for genome_id, genome in genomes:  # for each individual
-                genome.fitness = 0
-                net = neat.nn.FeedForwardNetwork.create(genome, config)
-                genome.fitness = self.single_drive_with_nn(net)
-
-
         local_dir = os.path.dirname(__file__)
         config_path = os.path.join(local_dir, 'config-feedforward')
         config = neat.Config(neat.DefaultGenome, neat.DefaultReproduction,
@@ -68,8 +84,7 @@ class Game:
         stats = neat.StatisticsReporter()
         p.add_reporter(stats)
         p.add_reporter(neat.Checkpointer(50))
-        winner = p.run(eval_genomes, 5000)
-
+        winner = p.run(self.eval_genomes, 5000)
 
 
 
@@ -96,10 +111,6 @@ class Game:
 
         ImageUtils.save_img_lst_2_gif(movie, self.result_file)
         ImageUtils.play_gif(self.result_file)
-
-    def single_drive_single_multiple_cars(self):
-        pass
-
 
     def test_game(self):
 
