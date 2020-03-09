@@ -28,9 +28,9 @@ class Game:
         pos = np.empty_like(nn_list)
         for i in range(len(pos)):
             pos[i] = (100, 30)
-        orientation = np.full_like(nn_list, 20)
+        orientation = np.full_like(nn_list, 0)
 
-        speed = 2.5
+        speed = 3
 
         while 1:
 
@@ -40,15 +40,19 @@ class Game:
 
             m = self.map.draw_map_bg()
             for i in range(len(nn_list)):
+
                 p, o, nn = pos[i], orientation[i], nn_list[i]
+                if marker[i]:
+                    ImageUtils.draw_car(m, p, o, self.colliders, draw_radar=False)
+                    continue
 
                 if ColliderUtils.collision((p, o), self.wall_rects):
                     marker[i] = True
 
                 ImageUtils.draw_car(m, p, o, self.colliders)
 
-                if marker[i]:
-                    continue
+                # if marker[i]:
+                #     continue
 
                 radar_data = ImageUtils.radar_data(p, o, self.colliders)
                 pos_new = MiscUtils.get_next_pos(p, o, speed)
@@ -70,8 +74,9 @@ class Game:
 
         pop_fitness = self.single_drive_with_whole_population(nn_list)
 
-        for gen_id, genome in genomes:
-            genome.fitness = pop_fitness[gen_id-1]
+        for i, genome in enumerate(genomes):
+            genome = genome[1]
+            genome.fitness = pop_fitness[i]
 
     def run(self):
         local_dir = os.path.dirname(__file__)

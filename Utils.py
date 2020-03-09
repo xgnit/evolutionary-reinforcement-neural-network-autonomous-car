@@ -307,7 +307,7 @@ class ImageUtils:
         return ImageUtils.radar_measurement(radar_pos, collider, angle)
 
     @staticmethod
-    def draw_car(image, pos, angle, collider_lines, car_color='blue', car_size=1):
+    def draw_car(image, pos, angle, collider_lines, car_color='blue', draw_radar=True, car_size=1):
         angle_degree = angle
         angle = math.radians(angle)
 
@@ -317,8 +317,9 @@ class ImageUtils:
         ImageDraw.Draw(image).polygon((tuple(vert[:,0]), tuple(vert[:,1]), tuple(vert[:,2]), tuple(vert[:,3])),
                                       fill=None, outline=(200, 0, 0))
 
-        radar_pos = ColliderUtils.radar_pos(vert)
-        ImageUtils.draw_radar(image, radar_pos, angle, collider_lines)
+        if draw_radar:
+            radar_pos = ColliderUtils.radar_pos(vert)
+            ImageUtils.draw_radar(image, radar_pos, angle, collider_lines)
 
         # for r in radar_pos:
         #     ra = 1
