@@ -25,8 +25,8 @@ class Game:
         movie = []
         travel_range = 0
         pos = (100, 30)
-        orientation = 0
-        speed = 2
+        orientation = 20
+        speed = 2.5
 
         while 1:
 
@@ -45,7 +45,8 @@ class Game:
             pos_new = MiscUtils.get_next_pos(pos, orientation, speed)
             travel_range = update_range(travel_range, pos, pos_new)
             pos = pos_new
-            orientation += nn.activate(radar_data)[0]
+            left, right = nn.activate(radar_data)
+            orientation += (left-right)
 
 
     def run(self):
@@ -67,7 +68,7 @@ class Game:
         stats = neat.StatisticsReporter()
         p.add_reporter(stats)
         p.add_reporter(neat.Checkpointer(50))
-        winner = p.run(eval_genomes, 300)
+        winner = p.run(eval_genomes, 5000)
 
 
 
