@@ -3,8 +3,8 @@
 class Config:
 
     @staticmethod
-    def turning_amplifier():
-        return 2
+    def car_speed():
+        return 4
 
     @staticmethod
     def car_width_base():

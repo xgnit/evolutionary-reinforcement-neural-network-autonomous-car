@@ -31,8 +31,6 @@ class Game:
             pos[i] = (100, 30)
         orientation = np.full_like(nn_list, 0)
 
-        speed = 4
-
         while 1:
 
             if np.all(marker):
@@ -60,7 +58,7 @@ class Game:
                 #     continue
 
                 radar_data = ImageUtils.radar_data(p, o, self.colliders)
-                pos_new = MiscUtils.get_next_pos(p, o, speed)
+                pos_new = MiscUtils.get_next_pos(p, o, Config.car_speed())
                 travel_range[i] = update_range(travel_range[i], p, pos_new)
                 pos[i] = pos_new
 
