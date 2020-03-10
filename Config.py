@@ -3,15 +3,19 @@
 class Config:
 
     @staticmethod
+    def turning_amplifier():
+        return 2
+
+    @staticmethod
     def car_width_base():
-        return 20
+        return 15
     @classmethod
     def car_length_base(cls):
         return 2 * cls.car_width_base()
 
     @classmethod
     def path_width(cls):
-        return int(4 * cls.car_width_base())
+        return int(3 * cls.car_width_base())
 
     @classmethod
     def map_size(cls):

@@ -4,6 +4,7 @@ from Utils import ImageUtils, ColliderUtils, MiscUtils
 import os, neat
 import numpy as np
 import time
+from Config import Config
 
 class Game:
 
@@ -30,11 +31,15 @@ class Game:
             pos[i] = (100, 30)
         orientation = np.full_like(nn_list, 0)
 
-        speed = 3
+        speed = 4
 
         while 1:
 
             if np.all(marker):
+                import os
+                if not os.path.exists('res'):
+                    os.makedirs('res')
+
                 ImageUtils.save_img_lst_2_gif(movie, 'res/' + str(time.time()) + self.result_file)
                 return travel_range
 
@@ -46,7 +51,7 @@ class Game:
                     ImageUtils.draw_car(m, p, o, self.colliders, draw_radar=False)
                     continue
 
-                if ColliderUtils.collision((p, o), self.wall_rects):
+                if ColliderUtils.collision((p, o), self.wall_rects) or travel_range[i] > 3000:
                     marker[i] = True
 
                 ImageUtils.draw_car(m, p, o, self.colliders)
@@ -60,7 +65,12 @@ class Game:
                 pos[i] = pos_new
 
                 left, right = nn.activate(radar_data)
-                orientation[i] += (left-right)
+
+                clamp = 5
+                turning = left - right
+                turning = clamp if turning > clamp else turning
+                turning = -1 * clamp if turning < -1 * clamp else turning
+                orientation[i] += turning
 
             movie.append(m)
 
