@@ -1,5 +1,5 @@
 
-# An self learning autonomous driving vehicle based on evolutionary neural network
+# An self learning autonomous vehicle based on evolutionary neural network
 
 Start the program by running: python Game.py
 
