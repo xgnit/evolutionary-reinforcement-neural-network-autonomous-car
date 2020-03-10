@@ -1,7 +1,6 @@
 from Utils import *
 import numpy as np
 from Config import Config
-from copy import deepcopy as dcopy
 
 class Map:
 
