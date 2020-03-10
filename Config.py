@@ -7,6 +7,14 @@ class Config:
         return 4
 
     @staticmethod
+    def max_fitness():
+        return 3000
+
+    @staticmethod
+    def angle_clamp():
+        return 5
+
+    @staticmethod
     def car_width_base():
         return 15
     @classmethod

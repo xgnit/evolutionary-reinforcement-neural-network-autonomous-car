@@ -49,7 +49,7 @@ class Game:
                     ImageUtils.draw_car(m, p, o, self.colliders, draw_radar=False)
                     continue
 
-                if ColliderUtils.collision((p, o), self.wall_rects) or travel_range[i] > 3000:
+                if ColliderUtils.collision((p, o), self.wall_rects) or travel_range[i] > Config.max_fitness():
                     marker[i] = True
 
                 ImageUtils.draw_car(m, p, o, self.colliders)
@@ -64,7 +64,7 @@ class Game:
 
                 left, right = nn.activate(radar_data)
 
-                clamp = 5
+                clamp = Config.angle_clamp()
                 turning = left - right
                 turning = clamp if turning > clamp else turning
                 turning = -1 * clamp if turning < -1 * clamp else turning
