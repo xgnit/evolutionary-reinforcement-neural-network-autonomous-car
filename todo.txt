@@ -1,0 +1,5 @@
+
+add arg parser
+auto play gif
+show neural network of the best individual of each generation
+add reinforcedment learning feature

@@ -1,4 +1,5 @@
 
+import os
 
 class Config:
 
@@ -54,3 +55,7 @@ class Config:
     @classmethod
     def used_map_size(cls):
         return cls.path_width() * cls.grid_size()
+
+    @staticmethod
+    def result_dir():
+        return os.path.join(os.path.dirname(os.path.realpath(__file__)), 'res')

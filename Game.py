@@ -5,6 +5,8 @@ import os, neat
 import numpy as np
 import time
 from Config import Config
+import shutil
+import os
 
 class Game:
 
@@ -34,11 +36,12 @@ class Game:
         while 1:
 
             if np.all(marker):
-                import os
-                if not os.path.exists('res'):
-                    os.makedirs('res')
 
-                ImageUtils.save_img_lst_2_gif(movie, 'res/generation_' + str(MiscUtils.generation_cnt) + self.result_file)
+                if not os.path.exists(Config.result_dir()):
+                    os.makedirs(Config.result_dir())
+
+                gif_name = 'res/generation_{}{}'.format(MiscUtils.generation_cnt, self.result_file)
+                ImageUtils.save_img_lst_2_gif(movie, gif_name)
                 MiscUtils.generation_cnt += 1
                 return travel_range
 
@@ -88,6 +91,14 @@ class Game:
             genome.fitness = pop_fitness[i]
 
     def run(self):
+
+
+        if os.path.exists(Config.result_dir()):
+            print('*'*50)
+            print('Removing previous results from {}'.format(Config.result_dir()))
+            shutil.rmtree(Config.result_dir())
+            print('*'*50)
+
         local_dir = os.path.dirname(__file__)
         config_path = os.path.join(local_dir, 'config-feedforward')
         config = neat.Config(neat.DefaultGenome, neat.DefaultReproduction,
@@ -99,9 +110,11 @@ class Game:
         p.add_reporter(stats)
         p.add_reporter(neat.Checkpointer(50))
         winner = p.run(self.eval_genomes, 5000)
-        print('*'*20)
-        print(r'All the results have been written into the {}\res folder'.format(os.path.dirname(os.path.realpath(__file__))))
-        print('*'*20)
+        print('\n')
+        print('*'*60)
+        print(r'All the results have been written into {}\res'.format(os.path.dirname(os.path.realpath(__file__))))
+        print('*'*60)
+        print('\n')
 
 
 
