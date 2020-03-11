@@ -365,6 +365,8 @@ class ImageUtils:
 
 class MiscUtils:
 
+    generation_cnt = 0
+
     @staticmethod
     def merge_neighbors(np_array):
         if np_array.size > 0:

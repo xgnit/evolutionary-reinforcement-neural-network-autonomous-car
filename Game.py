@@ -12,7 +12,7 @@ class Game:
         self.map = Map()
         self.colliders = self.map.collider_lines
         self.wall_rects = self.map.wall_rects
-        self.result_file = 'out.gif'
+        self.result_file = '.gif'
         self.best = 0
 
     def single_drive_with_whole_population(self, nn_list):
@@ -38,7 +38,8 @@ class Game:
                 if not os.path.exists('res'):
                     os.makedirs('res')
 
-                ImageUtils.save_img_lst_2_gif(movie, 'res/' + str(time.time()) + self.result_file)
+                ImageUtils.save_img_lst_2_gif(movie, 'res/generation_' + str(MiscUtils.generation_cnt) + self.result_file)
+                MiscUtils.generation_cnt += 1
                 return travel_range
 
             m = self.map.draw_map_bg()
@@ -98,6 +99,9 @@ class Game:
         p.add_reporter(stats)
         p.add_reporter(neat.Checkpointer(50))
         winner = p.run(self.eval_genomes, 5000)
+        print('*'*20)
+        print(r'All the results have been written into the {}\res folder'.format(os.path.dirname(os.path.realpath(__file__))))
+        print('*'*20)
 
 
 
