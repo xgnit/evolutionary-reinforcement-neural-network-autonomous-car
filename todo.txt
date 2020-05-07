@@ -1,7 +1,7 @@
 
-add arg parser
 auto play gif
 show neural network of the best individual of each generation
-add reinforcedment learning feature
 
-shrink the show case picture
+add arg parser -- done
+add reinforcedment learning feature -- done
+shrink the show case picture -- done
