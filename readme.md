@@ -26,10 +26,10 @@ Furthermore following are the result of reinfocement learning:
 
 This is one of the tests in the beginning:
 
-![alt text](./showcase/reinforcement_result/1.gif?raw=true "Bad bot :(")
+![alt text](./showcase/11.gif?raw=true "Bad bot :(")
 
 This is one test that passed the max required fitness
 
-![alt text](./showcase/reinforcement_result/2.gif?raw=true "Good bot :)")
+![alt text](./showcase/12.gif?raw=true "Good bot :)")
 
 Have fun!
