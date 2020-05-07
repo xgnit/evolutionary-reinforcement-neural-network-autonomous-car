@@ -11,7 +11,7 @@ python Game.py --rl True
 
 You can try to change the game by editing the Config.py file, e.g. change the map size, change the car size etc.
 
-Following is the example result of a evolutionary algorithm test:
+**Result of a evolutionary algorithm test:**
 
 This is the first generation
 
@@ -22,7 +22,7 @@ This is the last generation which has a individual fits the max required fitness
 ![alt text](./showcase/9.gif?raw=true "Last Generation")
 
 
-Furthermore following are the result of reinfocement learning:
+**Rresult of reinfocement learning**
 
 This is one of the tests in the beginning:
 
