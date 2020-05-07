@@ -4,3 +4,8 @@
 add result notifier
 remove old result when generating new result
 
+
+-July 7th, 2020
+
+add reinforcement learning option
+add argparse
