@@ -59,3 +59,7 @@ class Config:
     @staticmethod
     def result_dir():
         return os.path.join(os.path.dirname(os.path.realpath(__file__)), 'res')
+
+    @staticmethod
+    def start_pos():
+        return (100, 30)

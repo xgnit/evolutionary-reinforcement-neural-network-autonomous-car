@@ -6,6 +6,7 @@ from copy import deepcopy as dcopy
 import pyglet
 import shapely
 from shapely.geometry import LineString, Point, Polygon
+import os, shutil
 
 class ColliderUtils:
     # useful for wall blocks, but not for the car, cause the dot product of the car's vertices might
@@ -392,6 +393,22 @@ class MiscUtils:
         angle = -math.radians(orientation)
         pos = (pos[0] + speed * math.cos(angle), pos[1] + speed * math.sin(angle))
         return pos
+
+    @staticmethod
+    def rm_hist():
+        if os.path.exists(Config.result_dir()):
+            print('*'*50)
+            print('Removing previous results from {}'.format(Config.result_dir()))
+            shutil.rmtree(Config.result_dir())
+            print('*'*50)
+
+    @staticmethod
+    def finish_info():
+        print('\n')
+        print('*'*60)
+        print(r'All the results have been written into {}\res'.format(os.path.dirname(os.path.realpath(__file__))))
+        print('*'*60)
+        print('\n')
 
 
 def test_draw_car():

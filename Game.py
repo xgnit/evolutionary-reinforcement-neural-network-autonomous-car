@@ -1,14 +1,15 @@
 
 from Map import Map
-from Utils import ImageUtils, ColliderUtils, MiscUtils
-import os, neat
-import numpy as np
-import time
-from Config import Config
-import shutil
-import os
+import argparse
+from evolutionary_trainer import EvolutionaryTrainer
+from reinforcement_trainer import ReinforcementTrainer
+
+
+from evolutionary_trainer import EvolutionaryTrainer
 
 class Game:
+
+    evo_auto_play = False
 
     def __init__(self):
         self.map = Map()
@@ -17,142 +18,46 @@ class Game:
         self.result_file = '.gif'
         self.best = 0
 
-    def single_drive_with_whole_population(self, nn_list):
+    def run_reinfocement(self):
+        trainer = ReinforcementTrainer(self.map)
+        trainer.train()
 
-        marker = np.zeros_like(nn_list, dtype=bool)
-
-        def update_range(range, old_pos, new_pos):
-            res = np.array(old_pos) - np.array(new_pos)
-            return range + (res[0]**2 + res[1]**2)**0.5
-
-        travel_range = np.zeros_like(nn_list)
-        movie = []
-        # pos = np.full_like(nn_list, (100, 30))
-        pos = np.empty_like(nn_list)
-        for i in range(len(pos)):
-            pos[i] = (100, 30)
-        orientation = np.full_like(nn_list, 0)
-
-        while 1:
-
-            if np.all(marker):
-
-                if not os.path.exists(Config.result_dir()):
-                    os.makedirs(Config.result_dir())
-
-                gif_name = 'res/generation_{}{}'.format(MiscUtils.generation_cnt, self.result_file)
-                ImageUtils.save_img_lst_2_gif(movie, gif_name)
-                MiscUtils.generation_cnt += 1
-                return travel_range
-
-            m = self.map.draw_map_bg()
-            for i in range(len(nn_list)):
-
-                p, o, nn = pos[i], orientation[i], nn_list[i]
-                if marker[i]:
-                    ImageUtils.draw_car(m, p, o, self.colliders, draw_radar=False)
-                    continue
-
-                if ColliderUtils.collision((p, o), self.wall_rects) or travel_range[i] > Config.max_fitness():
-                    marker[i] = True
-
-                ImageUtils.draw_car(m, p, o, self.colliders)
-
-                # if marker[i]:
-                #     continue
-
-                radar_data = ImageUtils.radar_data(p, o, self.colliders)
-                pos_new = MiscUtils.get_next_pos(p, o, Config.car_speed())
-                travel_range[i] = update_range(travel_range[i], p, pos_new)
-                pos[i] = pos_new
-
-                left, right = nn.activate(radar_data)
-
-                clamp = Config.angle_clamp()
-                turning = left - right
-                turning = clamp if turning > clamp else turning
-                turning = -1 * clamp if turning < -1 * clamp else turning
-                orientation[i] += turning
-
-            movie.append(m)
-
-
-    def eval_genomes(self, genomes, config):
-        nn_list = []
-        for genome_id, genome in genomes:
-            genome.fitness = 0
-            net = neat.nn.FeedForwardNetwork.create(genome, config)
-            nn_list.append(net)
-
-        pop_fitness = self.single_drive_with_whole_population(nn_list)
-
-        for i, genome in enumerate(genomes):
-            genome = genome[1]
-            genome.fitness = pop_fitness[i]
-
-    def run(self):
-
-
-        if os.path.exists(Config.result_dir()):
-            print('*'*50)
-            print('Removing previous results from {}'.format(Config.result_dir()))
-            shutil.rmtree(Config.result_dir())
-            print('*'*50)
-
-        local_dir = os.path.dirname(__file__)
-        config_path = os.path.join(local_dir, 'config-feedforward')
-        config = neat.Config(neat.DefaultGenome, neat.DefaultReproduction,
-                             neat.DefaultSpeciesSet, neat.DefaultStagnation,
-                             config_path)
-        p = neat.Population(config)
-        p.add_reporter(neat.StdOutReporter(True))
-        stats = neat.StatisticsReporter()
-        p.add_reporter(stats)
-        p.add_reporter(neat.Checkpointer(50))
-        winner = p.run(self.eval_genomes, 5000)
-        print('\n')
-        print('*'*60)
-        print(r'All the results have been written into {}\res'.format(os.path.dirname(os.path.realpath(__file__))))
-        print('*'*60)
-        print('\n')
+    def run_evo(self):
+        trainer = EvolutionaryTrainer(self.map)
+        trainer.train()
 
 
 
-    def single_drive_single_car(self):
-
-        def update_orientation(old_orientation):
-            return old_orientation + 0.3
-
-        movie = []
-        pos = (100, 30)
-        orientation = -15
-        speed = 2
-
-        while 1:
-
-            if ColliderUtils.collision((pos, orientation), self.wall_rects):
-                break
-            m = self.map.draw_map_bg()
-            ImageUtils.draw_car(m, pos, orientation, self.colliders)
-            movie.append(m)
-            pos = MiscUtils.get_next_pos(pos, orientation, speed)
-            orientation = update_orientation(orientation)
+def str2bool(v):
+    if isinstance(v, bool):
+       return v
+    if v.lower() in ('yes', 'true', 't', 'y', '1'):
+        return True
+    elif v.lower() in ('no', 'false', 'f', 'n', '0'):
+        return False
+    else:
+        raise argparse.ArgumentTypeError('Boolean value expected.')
 
 
-        ImageUtils.save_img_lst_2_gif(movie, self.result_file)
-        ImageUtils.play_gif(self.result_file)
+def main():
 
-    def test_game(self):
 
-        movie = []
-        for i in range(50):
-            m = self.map.draw_map_bg()
-            ImageUtils.draw_car(m, (100, 30), i, self.colliders)
-            movie.append(m)
-        ImageUtils.save_img_lst_2_gif(movie, self.result_file)
-        ImageUtils.play_gif(self.result_file)
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--rl', type=str2bool, default=False, help='Will train the car with reinforcement learning, \
+    otherwise will train the car with genetic algorithm')
+    parser.add_argument('--auto_play', type=str2bool, default=False, help='Will play the gif after each generation automatically, \
+    only applicable for evolutionary method')
 
+    opt = parser.parse_args()
+    if opt.auto_play:
+        Game.evo_auto_play = True
+
+
+    if opt.rl:
+        Game().run_reinfocement()
+    else:
+        Game().run_evo()
 
 if __name__ == "__main__":
-    Game().run()
+    main()
 
