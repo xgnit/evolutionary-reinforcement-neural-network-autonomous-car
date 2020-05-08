@@ -26,7 +26,7 @@ class Net(nn.Module):
     def __init__(self):
         super(Net, self).__init__()
 
-        hidden_nodes = 30
+        hidden_nodes = 10
         self.hidden = nn.Linear(LIDAR_NO, hidden_nodes)
         self.hidden.weight.data.normal_(0, 0.1)
         self.out = nn.Linear(hidden_nodes, N_ACTIONS)
@@ -114,7 +114,7 @@ class DriveSim:
         old_pos = self.pos
 
         self.pos = MiscUtils.get_next_pos(self.pos, self.orientation, Config.car_speed())
-        self.orientation += 4*(action - N_ACTIONS//2)
+        self.orientation += 3*(action - N_ACTIONS//2)
         self.travel_range = update_range(self.travel_range, old_pos, self.pos)
 
         radar_data = ImageUtils.radar_data(self.pos, self.orientation, self.colliders)
@@ -126,10 +126,10 @@ class DriveSim:
 
         r1 = -3 * abs(l1 - l5)
         r2 = -1 * abs(l2 - l4)
-        if l3 < Config.path_width():
-            r3 = - Config.path_width()
+        if l3 < Config.path_width() + 5:
+            r3 = - Config.path_width() * 1.5
         else:
-            r3 = Config.path_width()
+            r3 = 0
         r = r1 + r2 + r3
 
         return radar_data, done, r
