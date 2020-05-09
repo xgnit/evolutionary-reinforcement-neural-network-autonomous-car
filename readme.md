@@ -33,7 +33,7 @@ This is one test that passed the max required fitness
 ![alt text](./showcase/12.gif?raw=true "Good bot :)")
 
 
-There is a statistics monitor for reinforcement learning, so you can see how is the current fitness is.
+There is a real-time statistics monitor for reinforcement learning, so you can see how is the current fitness is.
 Sometimes the reinforcement learning might not converge, but most of the case it should.
 
 ![alt text](./showcase/rl_statistics.gif?raw=true "stat :)")
