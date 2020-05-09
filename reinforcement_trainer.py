@@ -1,12 +1,9 @@
 
 from Utils import ImageUtils, ColliderUtils, MiscUtils
-import os, neat
 import numpy as np
 from Config import Config
-import shutil
 import os
 from evolutionary_trainer import Trainer
-import torch.nn.functional as F
 
 import torch
 import torch.nn as nn
@@ -14,11 +11,10 @@ import torch.nn as nn
 LIDAR_NO = 5
 GAMMA = 0.9
 MEM_CAP = 2000
-LR = 0.1
+LR = 0.0005
 EPSILON = 0.9
 BATCH = 32
-TARGET_REPLACE_ITER = 100
-# ENV_A_SHAPE= None
+TARGET_REPLACE_ITER = 200
 N_ACTIONS = 5
 
 
@@ -26,7 +22,7 @@ class Net(nn.Module):
     def __init__(self):
         super(Net, self).__init__()
 
-        hidden_nodes = 10
+        hidden_nodes = 20
         self.hidden = nn.Linear(LIDAR_NO, hidden_nodes)
         self.hidden.weight.data.normal_(0, 0.1)
         self.out = nn.Linear(hidden_nodes, N_ACTIONS)
@@ -85,6 +81,8 @@ class ReNet:
 
         self.optimizer.zero_grad()
         loss.backward()
+        for param in self.eval_net.parameters():
+            param.grad.data.clamp_(-1, 1)
         self.optimizer.step()
 
 
@@ -94,7 +92,7 @@ class DriveSim:
     def __init__(self, map):
         self.map = map
         self.pos = Config.start_pos()
-        self.orientation = 0
+        self.orientation = 180
         self.movie = []
         self.result_format = '.gif'
         self.colliders = self.map.collider_lines
@@ -114,7 +112,7 @@ class DriveSim:
         old_pos = self.pos
 
         self.pos = MiscUtils.get_next_pos(self.pos, self.orientation, Config.car_speed())
-        self.orientation += 3*(action - N_ACTIONS//2)
+        self.orientation += 4*(action - N_ACTIONS//2)
         self.travel_range = update_range(self.travel_range, old_pos, self.pos)
 
         radar_data = ImageUtils.radar_data(self.pos, self.orientation, self.colliders)
@@ -124,19 +122,19 @@ class DriveSim:
 
         l1, l2, l3, l4, l5 = radar_data
 
-        r1 = -3 * abs(l1 - l5)
-        r2 = -1 * abs(l2 - l4)
-        if l3 < Config.path_width() + 5:
-            r3 = - Config.path_width() * 1.5
-        else:
-            r3 = 0
-        r = r1 + r2 + r3
+        def calc():
+            side_limit, front_limit = 7, 15
+            if l1 < side_limit or l5 < side_limit or l2 < front_limit or \
+                    l4 < front_limit or l3 < Config.path_width():
+                return -1
+            return 1
+        r = calc()
 
         return radar_data, done, r
 
     def reset(self):
         self.pos = Config.start_pos()
-        self.orientation = 0
+        self.orientation = 180
         self.movie = []
         self.travel_range = 0
         radar_data = ImageUtils.radar_data(self.pos, self.orientation, self.colliders)
@@ -150,6 +148,7 @@ class DriveSim:
         DriveSim.sim_cnt += 1
         self.reset()
 
+import matplotlib.pyplot as plt
 
 class ReinforcementTrainer(Trainer):
     def __init__(self, map):
@@ -158,7 +157,29 @@ class ReinforcementTrainer(Trainer):
         self.sim = DriveSim(map)
         self.best_score = 0
 
+        self.range_hist = []
+
+        plt.ion()
+
     def train(self):
+
+        def plot():
+            plt.cla()
+            if len(self.range_hist) > 2000:
+                self.range_hist.pop(0)
+            self.range_hist.append(self.sim.travel_range)
+
+            plt.plot(range(len(self.range_hist)), self.range_hist, linewidth=0.5)
+            plt.plot(range(len(self.range_hist)), self.range_hist, 'b^-')
+            plt.xlabel('Testing number')
+            plt.ylabel('Fitness')
+            plt.pause(0.01)
+            if self.sim.travel_range > Config.max_fitness():
+                plt.savefig('res/rl_statistics.png')
+
+
+
+
         MiscUtils.rm_hist()
 
         for epi in range(20000):
@@ -172,9 +193,11 @@ class ReinforcementTrainer(Trainer):
 
                 self.renet.store_transition(s, a, r, s_)
 
+
                 if self.renet.memory_counter > MEM_CAP:
                     self.renet.learn()
                     if done:
+                        plot()
                         print('episode: {} score: {}'.format(epi, self.sim.travel_range))
                         if self.sim.travel_range > self.best_score:
                             self.best_score = self.sim.travel_range
