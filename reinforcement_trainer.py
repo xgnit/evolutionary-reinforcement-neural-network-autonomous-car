@@ -14,7 +14,7 @@ MEM_CAP = 2000
 LR = 0.005
 EPSILON = 0.9
 BATCH = 32
-TARGET_REPLACE_ITER = 200
+TARGET_REPLACE_ITER = 100
 N_ACTIONS = 5
 
 
@@ -186,6 +186,10 @@ class ReinforcementTrainer(Trainer):
 
 
         MiscUtils.rm_hist()
+
+        print('*'*50)
+        print('Gathering experience...')
+        print('*'*50)
 
         for epi in range(20000):
             s = self.sim.reset()
