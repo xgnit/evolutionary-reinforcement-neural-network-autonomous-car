@@ -11,7 +11,7 @@ import torch.nn as nn
 LIDAR_NO = 5
 GAMMA = 0.9
 MEM_CAP = 2000
-LR = 0.0005
+LR = 0.005
 EPSILON = 0.9
 BATCH = 32
 TARGET_REPLACE_ITER = 200
@@ -25,11 +25,16 @@ class Net(nn.Module):
         hidden_nodes = 20
         self.hidden = nn.Linear(LIDAR_NO, hidden_nodes)
         self.hidden.weight.data.normal_(0, 0.1)
+
+        self.hidden2 = nn.Linear(hidden_nodes, hidden_nodes)
+        self.hidden2.weight.data.normal_(0, 0.1)
+
         self.out = nn.Linear(hidden_nodes, N_ACTIONS)
         self.out.weight.data.normal_(0, 0.1)
 
     def forward(self, x):
         x = torch.relu(self.hidden(x))
+        x = torch.relu(self.hidden2(x))
         x = self.out(x)
         return x
 
@@ -112,7 +117,7 @@ class DriveSim:
         old_pos = self.pos
 
         self.pos = MiscUtils.get_next_pos(self.pos, self.orientation, Config.car_speed())
-        self.orientation += 4*(action - N_ACTIONS//2)
+        self.orientation += 4 * (action - N_ACTIONS//2)
         self.travel_range = update_range(self.travel_range, old_pos, self.pos)
 
         radar_data = ImageUtils.radar_data(self.pos, self.orientation, self.colliders)
