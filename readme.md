@@ -1,5 +1,5 @@
 
-# An self learning autonomous vehicle based on evolutionary neural network and reinforcement learning neural network
+# A self driving vehicle based on evolutionary neural network and reinforcement learning neural network
 
 This program is mean to demonstrate how a self learning autonomous vehicle works, with either evolutionary algorithm or reinforcement learning. That means you can switch between these two methodes.
 
