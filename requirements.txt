@@ -3,7 +3,7 @@ future==0.18.2
 kiwisolver==1.2.0
 matplotlib==3.2.1
 neat-python==0.92
-numpy==1.18.1
+numpy==1.21.0
 Pillow==9.0.0
 pyglet==1.4.10
 pyparsing==2.4.7
