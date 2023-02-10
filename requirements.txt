@@ -11,4 +11,4 @@ python-dateutil==2.8.1
 Shapely~=2.0.1
 six==1.14.0
 torch~=1.13.1
-torchvision==0.6.0
+torchvision==0.14.1
