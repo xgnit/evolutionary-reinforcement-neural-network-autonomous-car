@@ -100,9 +100,7 @@ class Map:
         )
         return bottom_wall, right_wall, top_wall, left_wall
 
-
     def generate_map(self):
-
         map_frame = self.map_frame_generator()
         # path_rects = [RectUtils.generate_block_vertice(0, self.grid_size-1, 0, 0)] + \
         #              self.get_path_rect(map_frame)
@@ -129,6 +127,9 @@ class Map:
             ImageDraw.Draw(map_image).line([tuple(l[0]), tuple(l[1])], fill=(0,255,0), width=2)
         return map_image
 
+
+    # the following are some tests of this module.
+    # you may run these to test if the map will be generated correctly or not.
     def static_test_map(self):
         m = self.draw_map_bg()
         # for w in self.wall_rects:
@@ -151,9 +152,6 @@ class Map:
         ImageUtils.save_img_lst_2_gif(movie, 'out.gif')
         ImageUtils.play_gif('out.gif')
             # map.show()
-
-
-
 
 if __name__ == "__main__":
     m = Map()

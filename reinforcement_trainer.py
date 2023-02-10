@@ -1,4 +1,3 @@
-
 from Utils import ImageUtils, ColliderUtils, MiscUtils
 import numpy as np
 from Config import Config
@@ -16,7 +15,6 @@ EPSILON = 0.9
 BATCH = 32
 TARGET_REPLACE_ITER = 100
 N_ACTIONS = 5
-
 
 class Net(nn.Module):
     def __init__(self):
@@ -70,14 +68,12 @@ class ReNet:
             self.target_net.load_state_dict(self.eval_net.state_dict())
         self.learn_step_counter += 1
 
-
         sample_index = np.random.choice(MEM_CAP, BATCH)
         b_memory = self.memory[sample_index, :]
         b_s = torch.FloatTensor(b_memory[:, :LIDAR_NO])
         b_a = torch.LongTensor(b_memory[:, LIDAR_NO:LIDAR_NO+1].astype(int))
         b_r = torch.FloatTensor(b_memory[:, LIDAR_NO+1:LIDAR_NO+2])
         b_s_ = torch.FloatTensor(b_memory[:, -LIDAR_NO:])
-
 
         q_eval = self.eval_net(b_s).gather(1, b_a)
         q_next = self.target_net(b_s_).detach()
@@ -89,7 +85,6 @@ class ReNet:
         for param in self.eval_net.parameters():
             param.grad.data.clamp_(-1, 1)
         self.optimizer.step()
-
 
 class DriveSim:
     sim_cnt = 0
@@ -161,9 +156,7 @@ class ReinforcementTrainer(Trainer):
         self.renet = ReNet()
         self.sim = DriveSim(map)
         self.best_score = 0
-
         self.range_hist = []
-
         plt.ion()
 
     def train(self):
@@ -182,9 +175,6 @@ class ReinforcementTrainer(Trainer):
             if self.sim.travel_range > Config.max_fitness():
                 plt.savefig('res/rl_statistics.png')
 
-
-
-
         MiscUtils.rm_hist()
 
         print('*'*50)
@@ -201,7 +191,6 @@ class ReinforcementTrainer(Trainer):
                 s_, done, r = self.sim.step(a)
 
                 self.renet.store_transition(s, a, r, s_)
-
 
                 if self.renet.memory_counter > MEM_CAP:
                     self.renet.learn()

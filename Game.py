@@ -4,11 +4,7 @@ import argparse
 from evolutionary_trainer import EvolutionaryTrainer
 from reinforcement_trainer import ReinforcementTrainer
 
-
-from evolutionary_trainer import EvolutionaryTrainer
-
 class Game:
-
     evo_auto_play = False
 
     def __init__(self):
@@ -26,8 +22,6 @@ class Game:
         trainer = EvolutionaryTrainer(self.map)
         trainer.train()
 
-
-
 def str2bool(v):
     if isinstance(v, bool):
        return v
@@ -38,10 +32,7 @@ def str2bool(v):
     else:
         raise argparse.ArgumentTypeError('Boolean value expected.')
 
-
 def main():
-
-
     parser = argparse.ArgumentParser()
     parser.add_argument('--rl', type=str2bool, default=False, help='Will train the car with reinforcement learning, \
     otherwise will train the car with genetic algorithm')
@@ -51,7 +42,6 @@ def main():
     opt = parser.parse_args()
     if opt.auto_play:
         Game.evo_auto_play = True
-
 
     if opt.rl:
         Game().run_reinfocement()

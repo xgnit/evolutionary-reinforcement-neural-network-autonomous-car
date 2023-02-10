@@ -6,7 +6,6 @@ from Config import Config
 import shutil
 import os
 
-
 class Trainer:
     def __init__(self, map):
         self.map = map
@@ -14,14 +13,11 @@ class Trainer:
         self.wall_rects = self.map.wall_rects
         self.result_file = '.gif'
 
-
 class EvolutionaryTrainer(Trainer):
     def __init__(self, map):
         super().__init__(map)
 
-
     def single_drive_with_whole_population(self, nn_list):
-
         marker = np.zeros_like(nn_list, dtype=bool)
 
         def update_range(range, old_pos, new_pos):
@@ -95,7 +91,6 @@ class EvolutionaryTrainer(Trainer):
     def train(self):
         MiscUtils.rm_hist()
 
-
         local_dir = os.path.dirname(__file__)
         config_path = os.path.join(local_dir, 'config-feedforward')
         config = neat.Config(neat.DefaultGenome, neat.DefaultReproduction,
@@ -111,8 +106,8 @@ class EvolutionaryTrainer(Trainer):
         MiscUtils.finish_info()
 
 
-
-
+    # the followings are some tests of this module.
+    # you may run them to test a minimum version of a single-run game, to check if the game is running as desired
     def single_drive_single_car(self):
 
         def update_orientation(old_orientation):
@@ -124,7 +119,6 @@ class EvolutionaryTrainer(Trainer):
         speed = 2
 
         while 1:
-
             if ColliderUtils.collision((pos, orientation), self.wall_rects):
                 break
             m = self.map.draw_map_bg()
@@ -132,7 +126,6 @@ class EvolutionaryTrainer(Trainer):
             movie.append(m)
             pos = MiscUtils.get_next_pos(pos, orientation, speed)
             orientation = update_orientation(orientation)
-
 
         ImageUtils.save_img_lst_2_gif(movie, self.result_file)
         ImageUtils.play_gif(self.result_file)
